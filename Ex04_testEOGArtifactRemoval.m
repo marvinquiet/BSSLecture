@@ -33,7 +33,7 @@ T = size(x, 2); % The number of samples per channel
 t = (0 : T - 1)/fs;
 
 % Plot the channels
-PlotECG(x, 4, 'b', fs, 'Raw data channels');
+% PlotECG(x, 4, 'b', fs, 'Raw data channels');
 
 % Run JADE
 lastEigJADE = N; % PCA stage
@@ -42,16 +42,19 @@ s_jade = W_JADE * x;
 A_jade = pinv(W_JADE); % The mixing matrix
 
 % Plot the sources
-% PlotECG(s_jade, 4, 'k', fs, 'Sources extracted by JADE');
+PlotECG(s_jade, 4, 'k', fs, 'Sources extracted by JADE');  % denoised channels
 
 % Channel denoising by JADE
-eog_channel = [2 3]; % check from the plots to visually detect the EOG
+eog_channel = [2 3]; % check from the plots to visually detect the EOG, I think this is based on experience
 s_jade_denoised = s_jade;
 s_jade_denoised(eog_channel, :) = 0;
 x_denoised_jade = A_jade * s_jade_denoised;
 
+% plot out denoised data
+PlotECG(x_denoised_jade, 4, 'b', fs, 'Denoised data channels');
+
 % Channel denoising by NSCA
-eog_channel = 24;
+eog_channel = 24;  % EOG channel from the dataset
 eog_ref = x(eog_channel, :);
 energy_envelope_len = round(0.25*fs);
 eog_envelope = sqrt(filtfilt(ones(1, energy_envelope_len), energy_envelope_len, eog_ref.^2));
@@ -63,12 +66,17 @@ J = eog_envelope >= eog_detection_threshold;
 I = 1 : T;
 
 [s_nsca, W_nsca, A_nsca] = NSCA(x,J, I);
+
+% plot out denoised data
+PlotECG(s_nsca, 4, 'k', fs, 'Sources extracted by NSCA');  % denoised channels
+
 % Channel denoising by JADE
 eog_channel = [1 2]; % check from the plots to visually detect the EOG
 s_nsca_denoised = s_nsca;
 s_nsca_denoised(eog_channel, :) = 0;
 x_denoised_nsca = A_nsca * s_nsca_denoised;
 % PlotECG(s_nsca, 4, 'r', fs, 'Sources extracted by NSCA');
+% PlotECG(x_denoised_jade, 4, 'b', fs, 'Denoised data channels');
 
 figure
 hold on

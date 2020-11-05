@@ -31,7 +31,7 @@ Cx = cov(x');
 Itr = 100; % The number of power method iterations
 
 v0 = rand(N, 1);
-v1 = EigenAnalysisPowerMethod(Cx, v0, Itr);
+v1 = EigenAnalysisPowerMethod(Cx, v0, Itr); % calculting it iteratively, can have an early stop
 scale1 = (Cx*v1)./v1;
 lambda1 = mean(scale1)
 

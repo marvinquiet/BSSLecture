@@ -16,11 +16,12 @@ clc
 clear
 close all
 
-example = 1;
+% fix example to EEG signal
+example = 1; 
 switch example
     case 1 % Load a sample EEG signal
         load EEGdata textdata data % A sample EEG from the OSET package
-        fs = 250;
+        fs = 250; % sampling frequency
         x = data'; % make the data in (channels x samples) format
         % Check the channel names
         disp(textdata)
@@ -37,7 +38,7 @@ N = size(x, 1); % The number of channels
 T = size(x, 2); % The number of samples per channel
 
 % Plot the channels
-PlotECG(x, 4, 'b', fs, 'Raw data channels');
+% PlotECG(x, 4, 'b', fs, 'Raw data channels');  % can be used to check data
 
 % Remove the channel means
 x_demeaned = x - mean(x, 2) * ones(1, size(x, 2));
@@ -49,8 +50,9 @@ x_demeaned = x - mean(x, 2) * ones(1, size(x, 2));
 Cx = cov(x_demeaned')
 
 % Eigenvalue decomposition
-[V, D] = eig(Cx, 'vector');
+[V, D] = eig(Cx, 'vector');  % in vector form, eigenvalues in reversed order
 
+% plot the eigenvalues
 figure
 subplot(121)
 plot(D(end:-1:1));
@@ -59,7 +61,7 @@ xlabel('Index');
 ylabel('Eigenvalue');
 title('Eigenvalues in linear scale');
 subplot(122)
-plot(10*log10(D(end:-1:1)/D(end)));
+plot(10*log10(D(end:-1:1)/D(end)));  % log-normalized to check the decimals
 grid
 xlabel('Index');
 ylabel('Eigenvalue ratios in dB');
@@ -67,10 +69,10 @@ title('Normalized eigenvalues in log scale');
 
 % Check signal evergy
 x_var = var(x_demeaned, [], 2) % Formula 1
-x_var2 = diag(Cx) % formula 2
+% x_var2 = diag(Cx) % formula 2, the diagnal of covariance matrix is the variance in each channel 
 
 % Decorrelate the channels
-y = V' * x_demeaned;
+y = V' * x_demeaned;  % a rotation by eigenvectors (change the basis does not change the variance)
 Cy = cov(y')
 y_var = diag(Cy)
 
@@ -79,14 +81,14 @@ y_var = diag(Cy)
 % Check total energy match
 x_total_energy = sum(x_var)
 Cx_trace = trace(Cx)
-eigenvale_sum = sum(D)
+eigenvale_sum = sum(D)  % trace(X) = sum(\labmda (X))
 Cy_trace = trace(Cy)
 
 % partial energy in eigenvalues
 x_partial_energy = 100.0 * cumsum(D(end : -1 : 1))./x_total_energy
 
 % set a cut off threshold for the eigenvalues
-th = 99.9;
+th = 99;  % a looser threshold
 N_eigs_to_keep = find(x_partial_energy <= th, 1, 'last')
 
 % find a compressed version of x
